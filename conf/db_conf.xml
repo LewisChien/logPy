@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<db_conf>
+	<conf pool="passport" db_url="127.0.0.1" db_port="3306" db_name="bzz_passport" db_usr="root" db_pass="123456"/>
+	<conf pool="db_game" db_url="127.0.0.1" db_port="3306" db_name="db_game" db_usr="root" db_pass="123456"/>
+</db_conf>
