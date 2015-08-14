@@ -12,7 +12,7 @@ from utils.logutils import *
 数据库执行公用类
 '''
 class DBExecUtil(object):
-
+	
 	'''
 	获取数据库连接
 	'''
@@ -22,10 +22,9 @@ class DBExecUtil(object):
 			pool = DBUtilPool.getPoolbyName(poolname)
 			if pool is not None:
 				conn = pool.connection()
-			if conn is None:
-				if DBUtilPool.boolExist(poolname) == False:
-					pool = DBUtilPool.buildSinglePool(poolname)
-					conn = pool.connection()
+			elif conn is None:
+				pool = DBUtilPool.buildSinglePool(poolname)
+				conn = pool.connection()
 		except Exception, e:
 			logError('根据连接池获取连接Error', e)
 		return conn
@@ -164,12 +163,34 @@ class DBExecUtil(object):
 				conn.rollback()
 			logError('__query私有方法Error', e)
 		return count
-		
+	
+	def tableFunc(self, poolname, sql):
+		cursor = None
+		conn = None
+		try:
+			try:
+				conn = self.getConnectByPool(poolname)
+				cursor = conn.cursor()
+				cursor.execute(sql)
+				#conn.commit()
+				
+			finally:
+				if cursor is not None:
+					cursor.close()
+				if conn is not None:
+					conn.close()
+		except Exception, e:
+			if conn is not None:
+				conn.rollback()
+			logError('__query私有方法Error', e)
+	
 if __name__ == '__main__':
 	dbexec = DBExecUtil()
-	#sql = "select * from cfg_access_channel where channel_id= %s"
-	sql = "insert into server_permit (channel,address) values (%s, %s)"
+	sql2 = "DROP TABLE IF EXISTS `temp_gm_log`"
+	sql = '''CREATE TABLE `temp_gm_log` (
+			`Cmd` VARCHAR(64) DEFAULT NULL COMMENT 'gm命令',
+			`count` INT(10) DEFAULT NULL COMMENT '数量'
+			) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='gm_cmd_log_temp';'''
 	#sql = "update server_permit  set address=%s WHERE channel= %s"
-	param = [('tw9', '192.168.20.3'),('hk1','192.168.30.20')]
-	result = dbexec.insert_many('passport', sql, param)
-	print result
+	sql1 = "CREATE TABLE temp_gm_log LIKE gm_cmd_log"
+	result = dbexec.insert_one('passport', sql)
